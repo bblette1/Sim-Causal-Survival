@@ -47,7 +47,7 @@ simCausalSurvival <- function(n = 1000, tpoints = 10, psi = 0.3,
   A_prev[, 1] <- rep(0, n)
   Y_prev[, 1] <- rep(0, n)
   
-  L_logit <- gamma0 + gamma1*(T_0 < 0.5)
+  L_logit <- gamma0 + gamma1*(T_0 < 20)
   L_probs <- exp(L_logit) / (1 + exp(L_logit))
   L[, 1] <- rbinom(n, 1, L_probs)
   
@@ -66,7 +66,7 @@ simCausalSurvival <- function(n = 1000, tpoints = 10, psi = 0.3,
     
     Y_prev[, j] <- Y[, (j - 1)]
     
-    L_logit <- gamma0 + gamma1*(T_0 < 0.5) + gamma2*A[, (j - 1)] +
+    L_logit <- gamma0 + gamma1*(T_0 < 20) + gamma2*A[, (j - 1)] +
                gamma3*L[, (j - 1)]
     L_probs <- exp(L_logit) / (1 + exp(L_logit))
     L[, j] <- rbinom(n, 1, L_probs)
@@ -93,32 +93,18 @@ simCausalSurvival <- function(n = 1000, tpoints = 10, psi = 0.3,
       (j - 1 + ((T_0[group2] - check_times[, (j-1)][group2])*
                  exp(-psi*A[, j][group2])))
     
-    #Times[, j] <- 
-      #Times[, (j - 1)]*Y[, j]*Y_prev[, j] +
-      #(j - 1 + ((T_0 - check_times[, (j-1)])*exp(-psi*A[,(j-1)])))*
-      #(1 - Y[, (j - 1)])
-    
     L_prev[, j] <- L[, (j - 1)] 
     A_prev[, j] <- A[, (j - 1)] 
     
   }
   
-  # Make data set in counting process format
+  # Make data set
   ID <- rep(1:n, each = tpoints)
-  #Time[is.na(Time)] <- tpoints
-  #Start <- rep(1:tpoints-1, n)
-  #Start[Start > c(t(Time)) & c(t(Time)) != 0] <- 
-    #c(t(Time))[Start > c(t(Time)) & c(t(Time)) != 0]
-  #Stop <- rep(1:tpoints, n)
-  #Stop[c(t(Y)) == 1 & c(t(Time)) != 0] <- 
-    #c(t(Time))[c(t(Y)) == 1 & c(t(Time)) != 0]
-  
   data <- data.frame(ID, c(t(Y)), c(t(A)), c(t(L)), c(t(Y_prev)),
                      c(t(A_prev)), c(t(L_prev)), c(t(Times)))
   colnames(data) <- c("ID", "Delta", "A", "L", "Delta_prev", "A_prev",
                       "L_prev", "Time")
   
   return(data)
-  #return(data[data$Start != data$Stop, ])
   
 }
